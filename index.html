@@ -1,0 +1,33 @@
+<head>
+
+    <title> Download Test </title>
+
+</head>
+<body>
+
+
+    <div id="header">
+      <a id="TextDownload"> Download Text File </a>
+      <a id="JSONdownload"> Download JSON File</a>
+    </div>
+
+    <script id="content" type="text/plain">
+        Hello World!
+    </script>
+
+    <script>
+
+        window.onload = function(){
+            document.getElementById("TextDownload").href = "data:text/plain; charset=utf-16," + document.getElementById("content").text;
+            document.getElementById("TextDownload").download = "test.txt";
+
+            var obj = new Float32Array([1,2,3,4,40,30,20,10]);
+
+            document.getElementById("JSONdownload").href = "data:text/json; charset=utf-16," + encodeURIComponent(JSON.stringify(obj));
+            document.getElementById("JSONdownload").download = "test.json";
+            document.getElementById("JSONdownload").click();
+        }
+
+    </script>
+
+</body>

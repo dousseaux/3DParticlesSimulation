@@ -1,0 +1,84 @@
+<head>
+
+    <title> Particles Simulation 3D </title>
+
+    <link href='https://fonts.googleapis.com/css?family=Oswald:400,700,300' rel='stylesheet' type='text/css'>
+    <link href='../common/style.css' rel='stylesheet' type="text/css">
+
+</head>
+
+<body>
+
+  <meta id="viewport" name="viewport" content="initial-scale=1.0 user-scalable=0 minimum-scale=1.0 maximum-scale=1.0" />
+
+    <div id="header">
+      <img id="logo" src="../imgs/logo.png">
+      <h1> 3D Particles Simulation</h1>
+    </div>
+
+    <div id="container">
+
+        <canvas id="screen" width="600" height="600">
+        </canvas>
+
+        <div id="menu">
+            <img id="pause" class="icon" src="../imgs/pause.png"><br>
+            <img id="add" class="icon" src="../imgs/add.png"><br>
+            <img id="remove" class="icon" src="../imgs/remove.png"><br>
+            <img id="restart" class="icon" src="../imgs/restart.png"><br>
+            <div>
+              <div id="specs">
+                <div>
+                  <h2> Physics Settings </h2>
+                  <img id="pinSpecs" src="../imgs/pin.png"><br>
+                  <br>
+
+                  Gravity (pixels/step<sup>2</sup>):
+                  <input id="gravityInput" type="text" name="gravity" width="100px">
+                  <br>
+
+                  Friction (kg/step):
+                  <input id="frictionInput" type="text" name="friction" width="100px">
+                  <br>
+
+                  Interaction 1:
+                  <br>
+                  <textarea id="interactCode1" cols="30" rows="3"></textarea>
+                  <br>
+                  Interaction 2:
+                  <br>
+                  <textarea id="interactCode2" cols="30" rows="3"></textarea>
+                  <br>
+                </div>
+              </div>
+              <img id="phys" class="icon" src="../imgs/physics.png"><br>
+            </div>
+            <div>
+              <div id="simulationInfo">
+                <span id="status"><span id="time"></span><span id="particles"></span></span>
+                <img id="pinSimuInfo" src="../imgs/pin.png"><br>
+                <table id="particlesState" cellspacing="0"></table>
+              </div>
+              <img id="analysis" class="icon" src="../imgs/analysis.png"><br>
+            </div>
+            <div>
+              <div id="settingsmenu">
+                <div>
+                  <button id="activeWalls">Active Walls</button>
+                  <button id="activeEdges">Active Edges</button>
+                </div>
+              </div>
+              <img id="settings" class="icon" src="../imgs/settings.png"><br>
+            </div>
+            <img id="goFull" class="icon" src="../imgs/fullS.png"><br>
+        </div>
+        <div id="side"></div>
+    </div>
+
+    <script src='FragmentShader.js'></script>
+    <script src='VertexShader.js'></script>
+    <script src='../common/view.js'></script>
+    <script src='particlesSimulation.js'></script>
+    <script src="forces.js"></script>
+
+</body>
