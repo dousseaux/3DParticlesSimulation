@@ -6,7 +6,6 @@ var World = function() {
     this.shader = createShaderProgram(this.gl, document.getElementById('DVertexShader').text, document.getElementById('DFragmentShader').text);
     this.scene = new scene(this.gl, this.canvas);
 
-    //console.log(this.gl.getSupportedExtensions());
     this.size = {x: 1000, y: 800, z: 1000};
     this.dt = 0.015;
     this.dt2 = this.dt*this.dt;
@@ -14,7 +13,9 @@ var World = function() {
     this.wallSpring = 400.0;
     this.maxvelocity = 80.0;
     this.gravity = 0.0;
-    this.texsize = {x:256, y:256};
+    this.texsize = {x:256, y: 256};
+
+    this.count = 0;
 
     this.colorBackup = [];
     this.id = 0;
@@ -28,7 +29,6 @@ var World = function() {
         distance: new Float32Array(this.texsize.x*this.texsize.y*4),
         radius: new Float32Array(this.texsize.x*this.texsize.y*1),
         velocity: new Float32Array(this.texsize.x*this.texsize.y*4),
-        ids:  0,
         colors: new Float32Array(4*this.texsize.x*this.texsize.y*4),
     }
 
@@ -44,6 +44,8 @@ var World = function() {
     this.compshaders.push(createShaderProgram(this.gl, CVShader, CFShader[1]));
     this.compshaders.push(createShaderProgram(this.gl, CVShader, CFShader[2]));
     this.compshaders.push(createShaderProgram(this.gl, CVShader, CFShader[3]));
+
+    this.simpleshader = createShaderProgram(this.gl, document.getElementById('SVertexShader').text, document.getElementById('SFragmentShader').text);
 
     this.gl.getExtension("OES_texture_float");
     this.gl.getExtension("OES_texture_float_linear");
@@ -100,8 +102,13 @@ var World = function() {
     }
 
     this.update = function() {
+        self.count++;
         self.gpucomp.compute1();
         self.time += self.dt;
+        if(self.count>3){
+            self.count = 0;
+            self.view.render();
+        }
         self.animationID = requestAnimationFrame(self.update);
     }
 };
@@ -122,12 +129,12 @@ World.prototype = {
 
        if(this.scene.up.x === 0 && this.scene.up.y === 1 && this.scene.up.z === 0){
          this.scene.camera.z = 600;
-         this.scene.far = 3000;
+         this.scene.far = 30000;
          this.scene.updateCamera();
          this.scene.updateProjection();
         }
 
-       //addEdges(this);
+       addEdges(this);
 
        this.gpucomp = new physicsComputingRender(this, this.compshaders, this.data);
        this.scene.spheres = new spheres(this.scene, this.data, this.shader, this.gpucomp.position, this.gpucomp.radius, this.gpucomp.size);
@@ -147,7 +154,7 @@ World.prototype = {
         var color = [Math.random(), Math.random(), Math.random(), 1.0];
         var body = new particle(this, this.id, color, false);
 
-        body.position = {x: Math.random()*100, y: Math.random()*100, z: Math.random()*100};
+        body.position = {x: Math.random()*this.size.x, y: Math.random()*this.size.y, z: Math.random()*this.size.z};
         body.radius = 7;
         body.velocity.x = 50.0;
         body.velocity.y = 50.0;
@@ -199,7 +206,7 @@ World.prototype = {
             var color = [Math.random(), Math.random(), Math.random(), 1.0];
             var body = new particle(self, self.id, color, true);
 
-            body.position = {x: Math.random()*100, y: Math.random()*100, z: Math.random()*100};
+            body.position = {x: Math.random()*self.size.x, y: Math.random()*self.size.y, z: Math.random()*self.size.z};
             body.radius = 7;
             body.velocity.x = 50.0;
             body.velocity.y = 50.0;
@@ -302,7 +309,7 @@ function addWalls(world){
 
 function addEdges(world){
     world.edges = [];
-    for(var i=0; i<12; i++)world.edges.push(new line(world.scene, world.shader));
+    for(var i=0; i<12; i++)world.edges.push(new line(world.scene, world.simpleshader));
 
     world.edges[0].p1 = {x: world.size.x, y: world.size.y, z: world.size.z}
     world.edges[0].p2 = {x:-world.size.x, y: world.size.y, z: world.size.z}
@@ -362,5 +369,5 @@ window.onload = function(){
 
     world.setup();
     world.simulate();
-    this.view.startRender()
+    //this.view.startRender()
 };

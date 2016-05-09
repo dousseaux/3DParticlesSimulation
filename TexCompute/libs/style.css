@@ -1,0 +1,191 @@
+<style>
+
+  h1{font: 25px 'Oswald', sans-serif}
+
+  html{
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+      font: 12px 'Oswald', sans-serif;
+      color: white;
+      background-color: #d5d5d5;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+  }
+
+  @media screen and (max-height:414px) {
+    body{ overflow: auto }
+  }
+
+  canvas{
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+  }
+
+  div#container{
+    margin: 10px 20px;
+    padding: 0px;
+    border: 4px solid #42157c;
+    border: none;
+  }
+
+  div#container:-webkit-full-screen,
+  div#container:-moz-full-screen,
+  {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  div#header{
+    margin: 10px 20px;
+    padding: 0px;
+  }
+
+  .fixed{
+    display: block;
+  }
+
+  #logo{ margin-bottom: -20; margin-right: 10 }
+
+  #header h1{color: #42157c; text-align: center; display: inline-block}
+
+  /* ############## MENU BAR STYLE ############### */
+  #specs{
+    display: none;
+    position: absolute;
+    width: 300;
+    margin-top: -175px;
+    padding: 0;
+    background-color: rgba(40,40,40,0.7);
+  }
+  div#specs div{
+    margin: 10px;
+  }
+
+  #settingsmenu{
+    display: none;
+    position: absolute;
+    width: 300;
+    margin-top: -255px;
+    padding: 0;
+    background-color: rgba(40,40,40,0.7);
+  }
+
+  #simulationInfo{
+    display: none;
+    position: absolute;
+    margin: 0;
+    padding:0;
+    margin-top: -215px;
+    background-color: rgba(40,40,40,0.4);
+  }
+
+  #menu{
+    /* DO NOT CHANGE */
+    display: inline-block;
+    position: absolute;
+    width: 40;
+    padding: 0;
+    margin: 0;
+
+    /* CHANGE */
+    border-right: 4px solid #42157c;
+    border-left: 4px solid #42157c;
+    background-color: white;
+  }
+
+  #side{
+    display: inline-block;
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    margin-left: 41;
+    width: 2;
+  }
+
+  /* ############## ICONS STYLE ############### */
+  .icon{
+    height:30px;
+    width:auto;
+    margin-left: 5px;
+    margin-bottom: 10px;
+  }
+
+  #pause{ margin-top: 15px}
+
+  #specs h2{display: inline-block}
+
+  #pinSpecs {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin-top: 15px;
+    margin-right: 10px;
+  }
+
+  #pinSimuInfo {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin-top: 15px;
+    margin-right: 10px;
+  }
+
+  table#particlesState{
+    margin-left: 20px;
+    margin-top: 0px;
+    top: 0;
+    padding: 0;
+    display: inline-block
+  }
+
+  table#particlesState th{
+    font-size: 13px;
+    width: 70px;
+    border-right: 2px solid grey;
+    border-bottom: 2px solid #42157c;
+  }
+
+  #status{
+    position: absolute;
+    bottom: -30;
+    margin-bottom: 5;
+    margin-left: 5;
+  }
+
+  #time{ margin-right: 10}
+
+  table#particlesState td{
+    font-size: 12px;
+    width: 70px;
+    border-right: 2px solid grey;
+    border-bottom: 1px solid grey;
+    text-align: right;
+  }
+
+  table#particlesState td:first-of-type{ }
+  table#particlesState td:last-of-type{border-right: none}
+  table#particlesState th:last-of-type{border-right: none}
+
+  /* ############## PHYS MENU STYLE ############### */
+  button{ width: 70px; margin-left: 27px; margin-top: 30px}
+
+  span{ display: inline-block; padding-bottom: 15px}
+
+  span#thrust{ margin-top: 15px}
+
+  input{ width: 70px }
+
+  .hide{ display: none }
+
+</style>

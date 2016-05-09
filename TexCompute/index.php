@@ -2,7 +2,7 @@
 
     <title> Particles Simulation 3D </title>
     <link href='https://fonts.googleapis.com/css?family=Oswald:400,700,300' rel='stylesheet' type='text/css'>
-    <link href='../common/style.css' rel='stylesheet' type="text/css">
+    <link href='libs/style.css' rel='stylesheet' type="text/css">
 
 </head>
 
@@ -86,7 +86,13 @@
     <script id='CFragmentShader1' type='text/glsl'><?php readfile('shaders/CFragmentShader1.glsl') ?></script>
     <script id='CFragmentShader2' type='text/glsl'><?php readfile('shaders/CFragmentShader2.glsl') ?></script>
     <script id='CFragmentShader3' type='text/glsl'><?php readfile('shaders/CFragmentShader3.glsl') ?></script>
-    <script src='../common/view.js'></script>
+    <script id='SVertexShader' type='text/glsl'><?php readfile('shaders/SVertexShader.glsl') ?></script>
+    <script id='SFragmentShader' type='text/glsl'><?php readfile('shaders/SFragmentShader.glsl') ?></script>
+
+    <script src='libs/view.js'></script>
+    <script src='libs/JSFun.js'></script>
+    <script src='libs/GLFun.js'></script>
+
     <script src='particlesSimulation.js'></script>
     <script src='GPUcomputing.js'></script>
     <script src='forces.js'></script>

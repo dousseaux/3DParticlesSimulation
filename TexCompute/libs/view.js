@@ -164,7 +164,7 @@ var view = function(world){
       }
   }
   this.add.onclick = function(){
-    if(world.addMultBody){        
+    if(world.addMultBody){
         var n = parseInt(prompt("Number of particles: ", "1"))
         world.addMultBody(n);
     }
@@ -191,14 +191,14 @@ var view = function(world){
       self.isPaused = false;
       self.pause.src = "../imgs/pause2.png";
       world.simulate();
-      self.startRender();
+      //self.startRender();
     }else{
       self.isPaused = true;
       clearInterval(world.timeIntervalID);
       cancelAnimationFrame(world.animationID);
       self.pause.src = "../imgs/play2.png";
       world.animationID = null;
-      self.stopRender();
+      //self.stopRender();
     }
   }
   this.pinSpecs.onclick = function(){

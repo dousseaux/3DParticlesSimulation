@@ -22,11 +22,7 @@ var World = function() {
     var self = this;
 
     this.simulate = function() {
-        var time = performance.now()
         self.update();
-        time -= performance.now();
-        console.clear();
-        console.log(time);
         self.animationID = requestAnimationFrame(self.simulate);
     };
 };
@@ -34,12 +30,6 @@ var World = function() {
 World.prototype = {
 
     update: function() {
-        // Zero the forces.
-        for (var i = 0; i < this.bodies.length; i++) {
-           this.bodies[i].force.x = 0.0;
-           this.bodies[i].force.y = 0.0;
-           this.bodies[i].force.z = 0.0;
-        }
 
         for (var i = 0; i < this.bodies.length-1; i++) this.bodies[i].interact(this.bodies[i+1]);
 
@@ -301,28 +291,13 @@ function addRow(body){
 // -------------------------------- INTIALIZATION -------------------------------------
 window.onload = function(){
 
-    this.world = new World();
-    this.view = new view(this.world);
-    
-    this.world.view = this.view;
+    var w = new World();
+    var v = new view(w);
 
-    world.setup();
-    world.simulate();
+    w.view = v;
 
-    window.setInterval(this.view.render, 16);
-    window.setInterval(this.view.updateInfo, 250);
+    w.setup();
+    w.simulate();
 
-    /*
-    var iter = 3000;
-    for(var n=2; n<50000 ; n*=2){
-        world.setup(n);
-        var time = -performance.now()
-        for(var i=0; i<iter; i++) this.world.update();
-        time += performance.now();
-        time /= iter;
-        console.log(n.toString() + " - " + time.toFixed(3).toString());
-    }
-
-    alert("Done!");
-    */
+    w.view.startRender();
 };

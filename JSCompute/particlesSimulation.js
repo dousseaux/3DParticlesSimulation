@@ -76,9 +76,8 @@ var scene = function(gl, canvas){
     createlineBuffer(this);
 
     this.draw = function(){
-        // CLEAR BUFFERS
-        world.gl.bindFramebuffer(world.gl.FRAMEBUFFER, null);
-        initViewport(gl, this.canvas);
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+        initViewport(this.gl, this.canvas);
         this.gl.clearColor(0.05, 0.05, 0.1, 1.0)
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
     }

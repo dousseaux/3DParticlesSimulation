@@ -205,17 +205,16 @@ var spheres = function(scene, data, shader, translationTex, scaleTex, texsize){
             self.drawerBuffers.push(self.scene.gl.createBuffer());
             self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[0]);
             self.gl.bufferData(self.gl.ARRAY_BUFFER, self.drawerArrays[0], scene.gl.STATIC_DRAW);
-            var data2 = [];
-            for(var i=1; i<n-1; i++){
-                self.drawerArrays.push(new Float32Array(self.idsBuffer, 8*i*this.sphereVertexSize*self.items_p_render, 2*self.items_p_render*self.sphereVertexSize));
+            for(var i=1; i<n; i++){
+                self.drawerArrays.push(new Float32Array(self.idsBuffer, 8*i*self.sphereVertexSize*self.items_p_render, 2*self.items_p_render*self.sphereVertexSize));
                 self.drawerBuffers.push(self.scene.gl.createBuffer());
                 self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[i]);
                 self.gl.bufferData(self.gl.ARRAY_BUFFER, self.drawerArrays[i], scene.gl.STATIC_DRAW);
             }
-            self.drawerArrays.push(new Float32Array(self.idsBuffer, 8*(n-1)*this.sphereVertexSize*self.items_p_render, 2*(self.items - (n-1)*self.items_p_render)*self.sphereVertexSize));
+            self.drawerArrays.push(new Float32Array(self.idsBuffer, 8*n*self.sphereVertexSize*self.items_p_render, 2*(self.items - n*self.items_p_render)*self.sphereVertexSize));
             self.drawerBuffers.push(self.scene.gl.createBuffer());
-            self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[n-1]);
-            self.gl.bufferData(self.gl.ARRAY_BUFFER, self.drawerArrays[n-1], scene.gl.STATIC_DRAW);
+            self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[n]);
+            self.gl.bufferData(self.gl.ARRAY_BUFFER, self.drawerArrays[n], scene.gl.STATIC_DRAW);
         }else{
             self.drawerBuffers.push(self.scene.gl.createBuffer());
             self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[0]);
@@ -299,28 +298,29 @@ var spheres = function(scene, data, shader, translationTex, scaleTex, texsize){
         self.gl.uniform1i(self.vertexPositionUniform, 3);                                           // VERTEX POSITION
         self.gl.uniform1i(self.vertexNormalUniform, 4);                                             // NORMALS
 
+        self.gl.enableVertexAttribArray(self.sphereIdAttribute);
+
         var n = parseInt(self.items / self.items_p_render);
 
         if(n>0){
+
             self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[0]);
             self.gl.vertexAttribPointer(self.sphereIdAttribute, 2, self.gl.FLOAT, false, 0, 0);
-            self.gl.enableVertexAttribArray(self.sphereIdAttribute);
             self.gl.drawArrays(self.gl.TRIANGLES, 0, self.items_p_render*self.sphereVertexSize);
-            var data2 = [];
-            for(var i=1; i<n-1; i++){
+
+            for(var i=1; i<n; i++){
                 self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[i]);
                 self.gl.vertexAttribPointer(self.sphereIdAttribute, 2, self.gl.FLOAT, false, 0, 0);
-                self.gl.enableVertexAttribArray(self.sphereIdAttribute);
                 self.gl.drawArrays(self.gl.TRIANGLES, 0, self.items_p_render*self.sphereVertexSize);
             }
-            self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[n-1]);
+
+            self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[n]);
             self.gl.vertexAttribPointer(self.sphereIdAttribute, 2, self.gl.FLOAT, false, 0, 0);
-            self.gl.enableVertexAttribArray(self.sphereIdAttribute);
-            self.gl.drawArrays(self.gl.TRIANGLES, 0, (self.items - (n-1)*self.items_p_render)*self.sphereVertexSize);
+            self.gl.drawArrays(self.gl.TRIANGLES, 0, (self.items - n*self.items_p_render)*self.sphereVertexSize);
+
         }else{
             self.gl.bindBuffer(self.gl.ARRAY_BUFFER, self.drawerBuffers[0]);
             self.gl.vertexAttribPointer(self.sphereIdAttribute, 2, self.gl.FLOAT, false, 0, 0);
-            self.gl.enableVertexAttribArray(self.sphereIdAttribute);
             self.gl.drawArrays(self.gl.TRIANGLES, 0, self.items*self.sphereVertexSize);
         }
     }
@@ -403,66 +403,6 @@ var square = function(scene, shader){
         this.gl.uniform4fv(this.colorUniform, this.color);
 
         // DRAW
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-    }
-}
-
-// --------------------- CREATES A PSEUDO SCENE FOR GPU COMPUTATION ---------------------
-var computingRender = function(size, dimension, shader, gl){
-
-    // VARIABLES
-    this.gl = gl;
-    this.shaders = [];
-    this.shader = shader;
-    this.size = size;
-    this.squareTexBuffer = [];
-    this.squareVertexBuffer = [];
-    this.textures = [];
-    this.texUniforms = [];
-
-    createsquareTexBuffer(this);
-    this.vertexTexAttribute = gl.getAttribLocation(this.shader, "vTexPixels");
-    this.vertexPositionAttribute = gl.getAttribLocation(this.shader, "vertexPos");
-
-    this.outTex = createDataTexture(gl, size.x, size.y, new Float32Array(size.x*size.y*dimension), dimension);
-    this.framebuffer = createTextureFrameBuffer(gl, size.x, size.y, this.outTex)
-
-    this.addTexture = function(data, uniformName, d){
-        this.textures.push(createDataTexture(this.gl, this.size.x, this.size.y, data, d));
-        this.texUniforms.push(this.gl.getUniformLocation(this.shader, uniformName));
-    }
-
-    this.updateTexture = function(data, texnumber, d){
-        this.textures[texnumber] = (createDataTexture(this.gl, this.size.x, this.size.y, data, d));
-    }
-
-    this.getFrameData = function(destinationBuffer){
-        this.gl.readPixels(0, 0, this.size.x, this.size.y, this.gl.RGB, this.gl.FLOAT, destinationBuffer);
-    }
-
-    this.compute =  function() {
-
-        this.gl.viewport(0, 0, this.size.x, this.size.y);
-
-        this.gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-
-        // SET SHADER TO BE USED
-        this.gl.useProgram(this.shader);
-
-        // SET BUFFERS TO BE USED
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.squareTexBuffer);
-        this.gl.vertexAttribPointer(this.vertexTexAttribute, 2, this.gl.FLOAT, false, 0, 0);
-        this.gl.enableVertexAttribArray(this.vertexTexAttribute);
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.squareVertexBuffer);
-        this.gl.vertexAttribPointer(this.vertexPositionAttribute, 4, this.gl.FLOAT, false, 0, 0);
-        this.gl.enableVertexAttribArray(this.vertexPositionAttribute);
-
-        for(var i=0; i<this.textures.length; i++){
-            this.gl.activeTexture(this.gl.TEXTURE0+i);
-            this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[i]);
-            this.gl.uniform1i(this.texUniforms[i], i);
-        }
-
         this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
     }
 }
@@ -604,474 +544,6 @@ var wall = function(world){
     }
 }
 
-// ----------------------------- CREATE GL BUFFER FOR A SQUARE --------------------------
-function createsquareBuffer(scene) {
-
-    var vertex = [
-                        -0.5,  0.5,  0, 1.0,
-                         0.5,  0.5,  0, 1.0,
-                        -0.5, -0.5,  0, 1.0,
-                        -0.5, -0.5,  0, 1.0,
-                         0.5,  0.5,  0, 1.0,
-                         0.5, -0.5,  0, 1.0,
-                 ];
-
-    var normals = [ 0, 0, 1,
-                    0, 0, 1,
-                    0, 0, 1,
-                    0, 0, 1,
-                    0, 0, 1,
-                    0, 0, 1,
-                  ]
-
-
-
-    // CREATE BUFFERS
-    scene.squareNormalBuffer = scene.gl.createBuffer();
-    scene.gl.bindBuffer(scene.gl.ARRAY_BUFFER, scene.squareNormalBuffer);
-    scene.gl.bufferData(scene.gl.ARRAY_BUFFER, new Float32Array(normals), scene.gl.STATIC_DRAW);
-
-    scene.squareVertexBuffer = scene.gl.createBuffer();
-    scene.gl.bindBuffer(scene.gl.ARRAY_BUFFER, scene.squareVertexBuffer);
-    scene.gl.bufferData(scene.gl.ARRAY_BUFFER, new Float32Array(vertex), scene.gl.STATIC_DRAW);
-}
-
-// ----------------------------- CREATE GL BUFFER FOR A SQUARE --------------------------
-function createsquareTexBuffer(scene) {
-
-    var vertex = [
-                        -1,  1,  0, 1,
-                         1,  1,  0, 1,
-                        -1, -1,  0, 1,
-                        -1, -1,  0, 1,
-                         1,  1,  0, 1,
-                         1, -1,  0, 1
-                 ];
-
-    var texPixels = [ 0, 1,
-                      1, 1,
-                      0, 0,
-                      0, 0,
-                      1, 1,
-                      1, 0
-                    ]
-
-
-
-    // CREATE BUFFERS
-    scene.squareTexBuffer = scene.gl.createBuffer();
-    scene.gl.bindBuffer(scene.gl.ARRAY_BUFFER, scene.squareTexBuffer);
-    scene.gl.bufferData(scene.gl.ARRAY_BUFFER, new Float32Array(texPixels), scene.gl.STATIC_DRAW);
-
-    scene.squareVertexBuffer = scene.gl.createBuffer();
-    scene.gl.bindBuffer(scene.gl.ARRAY_BUFFER, scene.squareVertexBuffer);
-    scene.gl.bufferData(scene.gl.ARRAY_BUFFER, new Float32Array(vertex), scene.gl.STATIC_DRAW);
-}
-
-// ----------------------------- CREATE GL BUFFER FOR A LINE --------------------------
-function createlineBuffer(scene) {
-
-    var vertex = [
-                         0, 0, 0, 1.0,
-                         1, 1, 1, 1.0,
-                 ];
-
-    var normals = [ 0, 0, 0,
-                    0, 0, 0,
-                  ];
-
-    // CREATE BUFFERS
-    scene.lineNormalBuffer = scene.gl.createBuffer();
-    scene.gl.bindBuffer(scene.gl.ARRAY_BUFFER, scene.lineNormalBuffer);
-    scene.gl.bufferData(scene.gl.ARRAY_BUFFER, new Float32Array(normals), scene.gl.STATIC_DRAW);
-
-    scene.lineVertexBuffer = scene.gl.createBuffer();
-    scene.gl.bindBuffer(scene.gl.ARRAY_BUFFER, scene.lineVertexBuffer);
-    scene.gl.bufferData(scene.gl.ARRAY_BUFFER, new Float32Array(vertex), scene.gl.STATIC_DRAW);
-}
-
-// -------------------------------- CREATE SHADER PROGRAM -------------------------------
-function createShaderProgram(gl, vertexShaderSource, fragmentShaderSource){
-
-    function createShader(program, textype) {
-        var shader;
-
-        if (textype== "fragment") shader = gl.createShader(gl.FRAGMENT_SHADER);
-        else if (textype == "vertex") shader = gl.createShader(gl.VERTEX_SHADER);
-        else return null;
-
-        gl.shaderSource(shader, program);
-        gl.compileShader(shader);
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            alert(gl.getShaderInfoLog(shader));
-            return null;
-        }
-
-        return shader;
-    }
-
-    var fragmentShader = createShader(fragmentShaderSource, "fragment");
-    var vertexShader = createShader(vertexShaderSource, "vertex");
-
-    // Link the shaders into a program
-    var shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Could not initialise shaders");
-    }
-
-    return shaderProgram;
-}
-
-// ---------------------------------- CREATE TEXTURES -----------------------------------
-function createTextureFrameBuffer(gl, x, y, texture){
-
-    var frameBuffer = gl.createFramebuffer();
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-
-    return frameBuffer;
-}
-function createTexture(gl, src){
-
-    var texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-
-    var img = new Image();
-    img.src = src;
-
-    img.onload = function(){
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.FLOAT, img);
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-     };
-}
-function createDataTexture(gl, width, height, data, dimension){
-    var texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-
-    if(dimension === 1) gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, width, height, 0, gl.ALPHA, gl.FLOAT, data);
-    else if(dimension === 2) gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE_ALPHA, width, height, 0, gl.LUMINANCE_ALPHA, gl.FLOAT, data);
-    else if(dimension === 3) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.FLOAT, data);
-    else if(dimension === 4) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, data);
-
-    return texture;
-}
-function updateTexture1d(gl, size, texture, data){
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, size.x, size.y, 0, gl.ALPHA, gl.FLOAT, data);
-}
-function updateTexture3d(gl, size, texture, data){
-    gl.bindTexture(gl.TEXTURE_2D, texture); // 0
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, size.x, size.y, 0, gl.RGB, gl.FLOAT, data);
-}
-function updateTexture4d(gl, size, texture, data){
-    gl.bindTexture(gl.TEXTURE_2D, texture); // 0
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size.x, size.y, 0, gl.RGBA, gl.FLOAT, data);
-}
-function getFrameData3d(gl, size, frame, destinationBuffer){
-    gl.bindFramebuffer(gl.FRAMEBUFFER, frame);
-    gl.readPixels(0, 0, size.x, size.y, gl.RGB, gl.FLOAT, destinationBuffer);
-}
-function getFrameData4d(gl, size, frame, destinationBuffer){
-    gl.bindFramebuffer(gl.FRAMEBUFFER, frame);
-    gl.readPixels(0, 0, size.x, size.y, gl.RGBA, gl.FLOAT, destinationBuffer);
-}
-
-// ------------------------------ SET UP THE MODEL MATRIX -------------------------------
-function modelMatrix(obj){
-
-     var Sx = obj.scale.x;
-     var Sy = obj.scale.y;
-     var Sz = obj.scale.z;
-
-     var Ax = obj.angle.x;
-     var Ay = obj.angle.y;
-     var Az = obj.angle.z;
-
-     var Tx = obj.translate.x;
-     var Ty = obj.translate.y;
-     var Tz = obj.translate.z;
-
-   // The transform matrix for the square - translate back in Z for the camera
-   obj.translation = new Float32Array([
-                                                    1,  0,  0,  0,
-                                                    0,  1,  0,  0,
-                                                    0,  0,  1,  0,
-                                                   Tx, Ty, Tz, 1]);
-
-    // The transform matrix for the square - translate back in Z for the camera
-   obj.xrotation = new Float32Array([
-                                                   1, 0, 0, 0,
-                                                   0, Math.cos(Ax), -Math.sin(Ax), 0,
-                                                   0, Math.sin(Ax),  Math.cos(Ax), 0,
-                                                   0, 0, 0, 1]);
-
-    obj.yrotation = new Float32Array([
-                                                    Math.cos(Ay), 0, Math.sin(Ay), 0,
-                                                   0            , 1, 0           , 0,
-                                                   -Math.sin(Ay), 0, Math.cos(Ay), 0,
-                                                   0, 0, 0, 1]);
-
-    obj.zrotation = new Float32Array([
-                                                   Math.cos(Az), -Math.sin(Az), 0, 0,
-                                                   Math.sin(Az),  Math.cos(Az), 0, 0,
-                                                   0, 0, 1, 0,
-                                                   0, 0, 0, 1]);
-
-
-    obj.scalem = new Float32Array([
-                                                    Sx,  0,  0,  0,
-                                                    0,  Sy,  0,  0,
-                                                    0,  0,  Sz,  0,
-                                                    0,  0,   0, 1]);
-
-}
-
-// -------------------------------- SET UP VIEW MATRIX ----------------------------------
-function viewMatrix(scene){
-
-        var Cx = scene.camera.x;
-        var Cy = scene.camera.y;
-        var Cz = scene.camera.z;
-
-        var Lx = scene.look.x;
-        var Ly = scene.look.y;
-        var Lz = scene.look.z;
-
-        var Upwardsx = scene.up.x;
-        var Upwardsy = scene.up.y;
-        var Upwardsz = scene.up.z;
-
-        // Camera position minus look at
-        var Wx = Cx - Lx;
-        var Wy = Cy - Ly;
-        var Wz = Cz - Lz;
-
-        // Length of W
-        var Wl = Math.sqrt(Wx*Wx + Wy*Wy + Wz*Wz);
-
-        scene.camerad = Wl;
-
-        // Normalize W
-        Wx /= Wl;
-        Wy /= Wl;
-        Wz /= Wl;
-
-        // Upwards cross W
-        var Vx = Upwardsy*Wz - Upwardsz*Wy;
-        var Vy = Upwardsz*Wx - Upwardsx*Wz;
-        var Vz = Upwardsx*Wy - Upwardsy*Wx;
-
-        // Length of V
-        var Vl = Math.sqrt(Vx*Vx + Vy*Vy + Vz*Vz);
-
-        // Normalize V
-        Vx /= Vl;
-        Vy /= Vl;
-        Vz /= Vl;
-
-        // W cross V
-        var Ux = Wy*Vz - Wz*Vy;
-        var Uy = Wz*Vx - Wx*Vz;
-        var Uz = Wx*Vy - Wy*Vx;
-
-        // Length of U
-        var Ul = Math.sqrt(Ux*Ux + Uy*Uy + Uz*Uz);
-
-        // Normalize U
-        Ux /= Ul;
-        Uy /= Ul;
-        Uz /= Ul;
-
-        scene.viewMatrix = new Float32Array([
-                                               Vx, Vy, Vz, 0,
-	                                             Ux, Uy, Uz, 0,
-	                                             Wx, Wy, Wz, 0,
-	                                            -Cx,-Cy,-Cz, 1]);
-}
-
-// -------------------------------- UPDATE CAMERA COORDS --------------------------------
-function updateCamera(scene){
-
-  scene.viewMatrix = inverse(scene.viewMatrix);
-
-  scene.camera.x = scene.viewMatrix[12];
-  scene.camera.y = scene.viewMatrix[13];
-  scene.camera.z = scene.viewMatrix[14];
-  scene.xaxis.x = scene.viewMatrix[0];
-  scene.xaxis.y = scene.viewMatrix[1];
-  scene.xaxis.z = scene.viewMatrix[2];
-  scene.up.x = scene.viewMatrix[4];
-  scene.up.y = scene.viewMatrix[5];
-  scene.up.z = scene.viewMatrix[6];
-  scene.zaxis.x = scene.viewMatrix[8];
-  scene.zaxis.y = scene.viewMatrix[9];
-  scene.zaxis.z = scene.viewMatrix[10];
-
-  scene.viewMatrix = inverse(scene.viewMatrix);
-}
-
-// ------------------------------ SET UP PROJECTION MATRIX ------------------------------
-function projectionMatrix(scene){
-
-     var aspect = scene.aspect;
-     var fov = scene.fov;
-
-     var far = scene.far;
-     var near = scene.near;
-
-     var top = scene.top / aspect;
-     var bottom = scene.bottom /  aspect;
-     var left = scene.left;
-     var right = scene.right;
-
-     var d = near - far;
-
-     fov = Math.PI*fov / 180;
-
-     var f = Math.tan(Math.PI*0.5 - 0.5*fov);
-
-
-    if(scene.projectionMode === 1){
-
-        scene.projectionMatrix = new Float32Array(
-                                                    [f / aspect   , 0            , 0               , 0                 ,
-                                                     0            , f            , 0               , 0                 ,
-                                                     0            , 0            , (far+near) / d  , -1                ,
-                                                     0            , 0            , (2*far*near) / d, 0                 ]);
-    }else{
-
-        scene.projectionMatrix = new Float32Array(
-                                                    [ 2/(right-left)             , 0                          , 0                       , 0,
-                                                      0                          , 2/(top-bottom)             , 0                       , 0,
-                                                      0                          , 0                          , -2/(far-near)           , 0,
-                                                     -((right+left)/(right-left)),(-(top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1]);
-    }
-}
-
-// ---------------------------------- STARTS WEB GL -------------------------------------
-function initWebGL(canvas) {
-
-    var gl = null;
-
-    var msg = "Your browser does not support WebGL, " + "or it is not enabled by default.";
-
-    try{ gl = canvas.getContext("webgl")}
-    catch(e){ msg = "Error creating WebGL Context!: " + e.toString()}
-
-    if (!gl){
-        alert(msg);
-        throw new Error(msg);
-    }
-
-    return gl;
-}
-
-// -------------------------------- INITIALIZE VIEWPORT ---------------------------------
-function initViewport(gl, canvas){
-    gl.viewport(0, 0, canvas.width, canvas.height);
-}
-
-// ---------------------------------- KEYBOARD HANDLER ----------------------------------
-var Keyboarder = function(){
-
-    var keyState = {};
-
-    window.onkeydown = function(e){
-        keyState[e.keyCode] = true;
-    };
-
-    window.onkeyup = function(e){
-        keyState[e.keyCode] = false;
-    };
-
-    this.isDown = function(keyCode){
-        return keyState[keyCode] === true;
-    };
-
-    this.Keys = {LEFT: 37, RIGHT: 39, UP: 38, DOWN: 40, SPACE: 32,
-                 A: 65, S:83, D:68, W:87, PAGEUP: 33, PAGEDOWN: 34,
-                 CTRL: 17, SHIFT: 16};
-};
-
-// ------------------------------- CALCULATE 4X4 INVERSE --------------------------------
-var inverse = function(m){
-
-    var index = function(i,j){
-        return(m[4*(i-1) + j-1]);
-    }
-
-    var detm = index(1,1)*index(2,2)*index(3,3)*index(4,4) + index(1,1)*index(2,3)*index(3,4)*index(4,2) + index(1,1)*index(2,4)*index(3,2)*index(4,3) +
-               index(1,2)*index(2,1)*index(3,4)*index(4,3) + index(1,2)*index(2,3)*index(3,1)*index(4,4) + index(1,2)*index(2,4)*index(3,3)*index(4,1) +
-               index(1,3)*index(2,1)*index(3,2)*index(4,4) + index(1,3)*index(2,2)*index(3,4)*index(4,1) + index(1,3)*index(2,4)*index(3,1)*index(4,2) +
-               index(1,4)*index(2,1)*index(3,3)*index(4,2) + index(1,4)*index(2,2)*index(3,1)*index(4,3) + index(1,4)*index(2,3)*index(3,2)*index(4,1) -
-               index(1,1)*index(2,2)*index(3,4)*index(4,3) - index(1,1)*index(2,3)*index(3,2)*index(4,4) - index(1,1)*index(2,4)*index(3,3)*index(4,2) -
-               index(1,2)*index(2,1)*index(3,3)*index(4,4) - index(1,2)*index(2,3)*index(3,4)*index(4,1) - index(1,2)*index(2,4)*index(3,1)*index(4,3) -
-               index(1,3)*index(2,1)*index(3,4)*index(4,2) - index(1,3)*index(2,2)*index(3,1)*index(4,4) - index(1,3)*index(2,4)*index(3,2)*index(4,1) -
-               index(1,4)*index(2,1)*index(3,2)*index(4,3) - index(1,4)*index(2,2)*index(3,3)*index(4,1) - index(1,4)*index(2,3)*index(3,1)*index(4,2);
-
-    if(detm === 0) return 0;
-
-    var b = new Float32Array([
-
-        index(2,2)*index(3,3)*index(4,4)+index(2,3)*index(3,4)*index(4,2)+index(2,4)*index(3,2)*index(4,3) - index(2,2)*index(3,4)*index(4,3)-index(2,3)*index(3,2)*index(4,4)-index(2,4)*index(3,3)*index(4,2),
-        index(1,2)*index(3,4)*index(4,3)+index(1,3)*index(3,2)*index(4,4)+index(1,4)*index(3,3)*index(4,2) - index(1,2)*index(3,3)*index(4,4)-index(1,3)*index(3,4)*index(4,2)-index(1,4)*index(3,2)*index(4,3),
-        index(1,2)*index(2,3)*index(4,4)+index(1,3)*index(2,4)*index(4,2)+index(1,4)*index(2,2)*index(4,3) - index(1,2)*index(2,4)*index(4,3)-index(1,3)*index(2,2)*index(4,4)-index(1,4)*index(2,3)*index(4,2),
-        index(1,2)*index(2,4)*index(3,3)+index(1,3)*index(2,2)*index(3,4)+index(1,4)*index(2,3)*index(3,4) - index(1,2)*index(2,3)*index(3,4)-index(1,3)*index(2,4)*index(3,2)-index(1,4)*index(2,2)*index(3,3),
-        index(2,1)*index(3,4)*index(4,3)+index(2,3)*index(3,1)*index(4,4)+index(2,4)*index(3,3)*index(4,1) - index(2,1)*index(3,3)*index(4,4)-index(2,3)*index(3,4)*index(4,1)-index(2,4)*index(3,1)*index(4,3),
-        index(1,1)*index(3,3)*index(4,4)+index(1,3)*index(3,4)*index(4,1)+index(1,4)*index(3,1)*index(4,3) - index(1,1)*index(3,4)*index(4,3)-index(1,3)*index(3,1)*index(4,4)-index(1,4)*index(3,3)*index(4,1),
-        index(1,1)*index(2,4)*index(4,3)+index(1,3)*index(2,1)*index(4,4)+index(1,4)*index(2,3)*index(4,1) - index(1,1)*index(2,3)*index(4,4)-index(1,3)*index(2,4)*index(4,1)-index(1,4)*index(2,1)*index(4,3),
-        index(1,1)*index(2,3)*index(3,4)+index(1,3)*index(2,4)*index(3,1)+index(1,4)*index(2,1)*index(3,3) - index(1,1)*index(2,4)*index(3,3)-index(1,3)*index(2,1)*index(3,4)-index(1,4)*index(2,3)*index(3,1),
-        index(2,1)*index(3,2)*index(4,4)+index(2,2)*index(3,4)*index(4,1)+index(2,4)*index(3,1)*index(4,2) - index(2,1)*index(3,4)*index(4,2)-index(2,2)*index(3,1)*index(4,4)-index(2,4)*index(3,2)*index(4,1),
-        index(1,1)*index(3,4)*index(4,2)+index(1,2)*index(3,1)*index(4,4)+index(1,4)*index(3,2)*index(4,1) - index(1,1)*index(3,2)*index(4,4)-index(1,2)*index(3,4)*index(4,1)-index(1,4)*index(3,1)*index(4,2),
-        index(1,1)*index(2,2)*index(4,4)+index(1,2)*index(2,4)*index(4,1)+index(1,4)*index(2,1)*index(4,2) - index(1,1)*index(2,4)*index(4,2)-index(1,2)*index(2,1)*index(4,4)-index(1,4)*index(2,2)*index(4,1),
-        index(1,1)*index(2,4)*index(3,2)+index(1,2)*index(2,1)*index(3,4)+index(1,4)*index(2,2)*index(3,1) - index(1,1)*index(2,2)*index(3,4)-index(1,2)*index(2,4)*index(3,1)-index(1,4)*index(2,1)*index(3,2),
-        index(2,1)*index(3,3)*index(4,2)+index(2,2)*index(3,1)*index(4,3)+index(2,3)*index(3,2)*index(4,1) - index(2,1)*index(3,2)*index(4,3)-index(2,2)*index(3,3)*index(4,1)-index(2,3)*index(3,1)*index(4,2),
-        index(1,1)*index(3,2)*index(4,3)+index(1,2)*index(3,3)*index(4,1)+index(1,3)*index(3,1)*index(4,2) - index(1,1)*index(3,3)*index(4,2)-index(1,2)*index(3,1)*index(4,3)-index(1,3)*index(3,2)*index(4,1),
-        index(1,1)*index(2,3)*index(4,2)+index(1,2)*index(2,1)*index(4,3)+index(1,3)*index(2,2)*index(4,1) - index(1,1)*index(2,2)*index(4,3)-index(1,2)*index(2,3)*index(4,1)-index(1,3)*index(2,1)*index(4,2),
-        index(1,1)*index(2,2)*index(3,3)+index(1,2)*index(2,3)*index(3,1)+index(1,3)*index(2,1)*index(3,2) - index(1,1)*index(2,3)*index(3,2)-index(1,2)*index(2,1)*index(3,3)-index(1,3)*index(2,2)*index(3,1)
-
-    ])
-
-    var inverse = [];
-
-    for(var i=0; i<16; i++) inverse.push(b[i]/detm);
-
-    return new Float32Array(inverse);
-}
-
-// ----------------------------------- MULTIPLY AXB -------------------------------------
-function mult(a, b, factor){
-
-    var result = [];
-
-    for ( var i = 0; i < a.length/factor; ++i ) {
-        for ( var j = 0; j < b.length/factor; ++j ) {
-            var sum = 0.0;
-            for ( var k = 0; k < factor; k++) sum += a[i*4 + k] * b[j + k*b.length/factor];
-            result.push( sum );
-        }
-    }
-    return result;
-}
-
 // --------------------------------- MOUSE SELECTION ------------------------------------
 function mousePicking(mouse, scene, obj){
     var norms;
@@ -1079,8 +551,6 @@ function mousePicking(mouse, scene, obj){
     var x = -1 + (2*mouse.pos.x/scene.canvas.width);
     var y =  1 - (2*mouse.pos.y/scene.canvas.height);
     var ray_clip = [x , y, -1, 1];
-
-    var time = -performance.now();
 
     var ray_eye = mult(inverse(scene.projectionMatrix), ray_clip,4);
     ray_eye[2] = -1;
@@ -1114,9 +584,6 @@ function mousePicking(mouse, scene, obj){
             tp = t;
         }
     }
-
-    time += performance.now();
-    console.log(time);
 }
 
 // ------------------------- CAMERA MOVING AND AND OBJ MOVING ---------------------------
@@ -1374,26 +841,4 @@ function mouseMoving(mouse, world, obj){
         updateCamera(world.scene);
         mouse.count++;
     }
-}
-
-// ------------------------------- RETURN JSONS STRING ----------------------------------
-function dataToJSON(data){
-    return "data:text/json; charset=utf-16," + encodeURIComponent(JSON.stringify(data));
-}
-
-function objToArray(obj){
-    return Object.keys(obj).map(function(key){return obj[key]});
-}
-// --------------------------------- MOUSE HANDLER --------------------------------------
-var mouse =  function(canvas, click, move, release, zoom){
-    this.pos = {x: 0, y: 0, x0: 0, y0: 0};
-    this.pos2 = {x: 0, y: 0, x0: 0, y0: 0};
-
-    this.scroll = 0;
-    this.hold = false;
-    this.count = 0;
-    canvas.onmousedown = click;
-    canvas.onmousemove = move;
-    canvas.onmouseup = release;
-    canvas.onwheel = zoom;
 }
